@@ -1,29 +1,47 @@
+#< ------------------------ >#
+def print_import_error(
+        import_tree:str, 
+        error:Exception, 
+        link:str=None, # type: ignore
+        text:str=None, # type: ignore
+        import_type:str="Installed",
+        hypertext:bool=True
+    ):
+    print(f"{import_type} Import Error: {import_tree}",
+          f"  {error.args[0].split("(")[0]}", sep=os.linesep)
+    if hypertext:
+        hyperlink=f"\x1b]8;{""};{link}\x1b\\{text}\x1b]8;;\x1b\\"
+        print(f"  Is {hyperlink} installed?")
+    sys.exit(1)
+#< ------------------------ >#
+
 #< pre installed imports >#
 from importlib import import_module
 from typing import Any
+import os
 import sys
-#< ----------------------- >#
+#< ------------------------ >#
 
 #< not pre installed imports >#
 try:
     from prettytable import PrettyTable
 except Exception as error:
-    hyperlink="\x1b]8;{};{}\x1b\\{}\x1b]8;;\x1b\\".format("", "https://pypi.org/project/prettytable/", "prettytable")
-    print(f"Error: Failed to import module: [internals]<-[prettytable]<-[PrettyTable], is {hyperlink} installed?\n {error.args[0].split("(")[0]}")
-    sys.exit(1)
-# < ----------------------- >#
+    print_import_error(import_tree="[internals]<-[prettytable]<-[PrettyTable]", 
+        error=error, 
+        link="https://pypi.org/project/prettytable/", text="prettytable")
+# < ------------------------ >#
 
 # < photon provided imports >#
 try:
     from modules.common import (
-        _UNIVERSE, 
+        _UNIVERSALS, 
         log, 
         projectManifest
     )
 except Exception as error:
-    print(f"Error: Failed to import module: [internals]<-[common]\n {error.args[0].split("(")[0]}")
-    sys.exit(1)
-#< ----------------------- >#
+    print_import_error("[internals]<-[.modules.common]", 
+        error, hypertext=False, import_type="Photon")
+#< ------------------------ >#
 
 
 
@@ -31,8 +49,8 @@ except Exception as error:
 #< d is for default_colour, h is for highlight_colour, r is for reset_colour >#
 def print_help(
         project_name:str, 
-        project_data:dict[str, Any] = None,
-        manifest:projectManifest = None
+        project_data:dict[str, Any]=None, # type: ignore
+        manifest:projectManifest=None
     ) -> None:
     """
     print the [ help | --help | -h ] text for a project taken from its project.yaml file\n
@@ -50,21 +68,21 @@ def print_help(
         log.warning("Project has no defined help text")
         return
 
-    help_text=help_text.replace("{d}", _UNIVERSE.get_colour_style("cyan"))
-    help_text=help_text.replace("{h}", _UNIVERSE.get_colour_style("orange"))
-    help_text=help_text.replace("{r}", _UNIVERSE.get_colour_style("reset"))
+    help_text=help_text.replace("{d}", _UNIVERSALS.colour_style("cyan"))
+    help_text=help_text.replace("{h}", _UNIVERSALS.colour_style("orange"))
+    help_text=help_text.replace("{r}", _UNIVERSALS.colour_style("reset"))
 
     print(help_text)
-#< ----------------------- >#
+#< ------------------------ >#
 
 
 
 #< print the [ version | --version | -v ] text for a project taken from its project.yaml file >#
 def print_version(
         project_name:str, 
-        project_data:dict[str, Any] = None,
-        manifest:projectManifest = None,
-        as_table:bool = True
+        project_data:dict[str, Any]=None, # type: ignore
+        manifest:projectManifest=None,
+        as_table:bool=True
     ) -> None:
     """
     print the [ version | --version | -v ] text for a project taken from its project.yaml file\n
@@ -103,11 +121,11 @@ def print_version(
         table.field_names=table_headers
         table.add_rows(table_data)
 
-        print(f"{_UNIVERSE.get_colour_style("cyan")}{table}{_UNIVERSE.get_colour_style("reset")}")
+        print(f"{_UNIVERSALS.colour_style("cyan")}{table}{_UNIVERSALS.colour_style("reset")}")
 
     else:
         print(version_full)
-#< ----------------------- >#
+#< ------------------------ >#
 
 
 
@@ -123,45 +141,45 @@ def run_package(
         import_module(f"packages.{package_name}.main")
     except Exception as error:
         log.error(f"Failed to run package, {error}")
-#< ----------------------- >#
+#< ------------------------ >#
 
 
 
-#< ----------------------- >#
+#< ------------------------ >#
 def install_project(
     project_name:str
     ):
     log.error("No Current Implementation")
     sys.exit(1)
-#< ----------------------- >#
+#< ------------------------ >#
 
 
 
-#< ----------------------- >#
+#< ------------------------ >#
 def uninstall_project(
     project_name:str
     ):
     log.error("No Current Implementation")
     sys.exit(1)
-#< ----------------------- >#
+#< ------------------------ >#
 
 
 
-#< ----------------------- >#
+#< ------------------------ >#
 def update_project(
     project_name:str
     ):
     log.error("No Current Implementation")
     sys.exit(1)
-#< ----------------------- >#
+#< ------------------------ >#
 
 
 
-#< ----------------------- >#
+#< ------------------------ >#
 def list_project(
     project_name:str, 
-    project_data:dict[str, Any] = None,
-    manifest:projectManifest = None
+    project_data:dict[str, Any]=None, # type: ignore
+    manifest:projectManifest=None
     ):
 
     if project_data is None:
@@ -188,8 +206,8 @@ def list_project(
         ["recommends",                  project_data["setup"]["requires"]["recommends"]],
         ["suggests",                    project_data["setup"]["requires"]["suggests"]],
         [split_left, split_right],
-        [f"{_UNIVERSE.get_os().lower()} support",            project_data["platform"][_UNIVERSE.get_os()]["known_supported"]],
-        [f"{_UNIVERSE.get_os().lower()} supported versions", project_data["platform"][_UNIVERSE.get_os()]["version"]["known_supported"]],
+        [f"{_UNIVERSALS.os_platform().lower()} support",            project_data["platform"][_UNIVERSALS.os_platform()]["known_supported"]],
+        [f"{_UNIVERSALS.os_platform().lower()} supported versions", project_data["platform"][_UNIVERSALS.os_platform()]["version"]["known_supported"]],
         [split_left, split_right],
         ["main programming language",   project_data["language"]["name"]],
         ["intended language version",   project_data["language"]["version"]["full"]],
@@ -203,17 +221,17 @@ def list_project(
     table.align="l"
 
     table.add_rows(table_data)
-    print(f"{_UNIVERSE.get_colour_style("log_debug")}{table.get_string(header=False)}{_UNIVERSE.get_colour_style("reset")}")
-#< ----------------------- >#
+    print(f"{_UNIVERSALS.colour_style("log_debug")}{table.get_string(header=False)}{_UNIVERSALS.colour_style("reset")}")
+#< ------------------------ >#
 
 
 
-#< ----------------------- >#
+#< ------------------------ >#
 def refresh_project(
     project_name:str
     ):
     log.error("No Current Implementation")
     sys.exit(1)
-#< ----------------------- >#
+#< ------------------------ >#
 
 

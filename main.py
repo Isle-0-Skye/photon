@@ -1,33 +1,51 @@
+#< ------------------------ >#
+def print_import_error(
+        import_tree:str, 
+        error:Exception, 
+        link:str=None, # type: ignore
+        text:str=None, # type: ignore
+        import_type:str="Installed",
+        hypertext:bool=True
+    ):
+    print(f"{import_type} Import Error: {import_tree}",
+          f"  {error.args[0].split("(")[0]}", sep=os.linesep)
+    if hypertext:
+        hyperlink=f"\x1b]8;{""};{link}\x1b\\{text}\x1b]8;;\x1b\\"
+        print(f"  Is {hyperlink} installed?")
+    sys.exit(1)
+#< ------------------------ >#
+
 #< pre installed imports >#
 from typing import Any
+import os
 import sys
 #< ------------------------ >#
 
 # < photon provided imports >#
 try:
     from modules.common import (
-        _UNIVERSE, 
+        _UNIVERSALS, 
         log, 
         projectManifest
     )
 except Exception as error:
-    print(f"Error: Failed to import module: [main]<-[common]\n {error.args[0].split("(")[0]}")
-    sys.exit(1)
+    print_import_error("[main]<-[.modules.common]", 
+        error, hypertext=False, import_type="Photon")
 
 try:
     from modules.internals import (
+        install_project, 
+        list_project, 
         print_help, 
         print_version, 
+        refresh_project,
         run_package, 
-        install_project, 
         uninstall_project, 
-        update_project, 
-        list_project, 
-        refresh_project
+        update_project
     )
 except Exception as error:
-    print(f"Error: Failed to import module: [main]<-[internals]\n {error.args[0].split("(")[0]}")
-    sys.exit(1)
+    print_import_error(import_tree="[main]<-[.modules.internals]", 
+            error=error, hypertext=False, import_type="Photon")
 #< ------------------------ >#
 
 
@@ -36,6 +54,30 @@ except Exception as error:
 def main(
         argv:list[Any]=[]
     ) -> None:
+
+    #< create the manifest directories and links photons manifest >#
+    all_manifests_path=os.path.join(
+        _UNIVERSALS.root(), "manifests", "all")
+
+    installed_manifests_path=os.path.join(
+        _UNIVERSALS.root(), "manifests", "installed")
+
+    os.makedirs(all_manifests_path, exist_ok=True)
+    os.makedirs(installed_manifests_path, exist_ok=True)
+
+    if not os.path.exists (
+        os.path.join(all_manifests_path, "photon.yaml")):
+        os.symlink(
+            os.path.join(_UNIVERSALS.root(), "project.yaml"), 
+            os.path.join(all_manifests_path, "photon.yaml")
+        )
+
+    if not os.path.exists (
+        os.path.join(installed_manifests_path, "photon.yaml")):
+        os.symlink(
+            os.path.join(_UNIVERSALS.root(), "project.yaml"), 
+            os.path.join(installed_manifests_path, "photon.yaml")
+        )
 
     #< [1] would be __file__ >#
     #< [2] should be the start_mode: help, run, etc >#
@@ -117,9 +159,9 @@ def main(
             handler.setLevel(level)
 
     #< log setup vars >#
-    log.debug(f"OS: {_UNIVERSE.get_os()}")
-    log.debug(f"SEPERATOR: {_UNIVERSE.get_seperator()}")
-    log.debug(f"ROOT: {_UNIVERSE.get_root()}")
+    log.debug(f"OS: {_UNIVERSALS.os_platform()}")
+    log.debug(f"SEPERATOR: {os.sep}")
+    log.debug(f"ROOT: {_UNIVERSALS.root()}")
 
     log.debug(f"ALL_ARGS: {argv}")
     log.debug(f"START_MODE: {start_mode}")
@@ -129,57 +171,82 @@ def main(
     log.debug(f" -MANIFEST: {manifest.exists()}")
     log.debug(f" -INSTALLED: {manifest.installed()}")
 
-    #< no manifest no running, installing, etc >#
+    #< no manifest or invalid manifest = no running, installing, etc >#
     hyperlink=manifest.display_name()
-    if manifest.exists():
-        project_data=manifest.read()
-        try:
-            hyperlink="\x1b]8;{};{}\x1b\\{}\x1b]8;;\x1b\\".format("", project_data["project"]["github"], manifest.display_name())
-        except KeyError:
-            log.warning("No GitHub page provided")
-        except Exception as error:
-            log.warning(f"Failed to read manifest\n {error}")
-    else:
-        log.error(f"Unable to {start_mode}, no manifest found for {hyperlink}")
+    if not manifest.exists():
+        log.error(f"Unable to start, no manifest found for {hyperlink}")
         sys.exit(1)
+
+    project_data=manifest.read()
+    if project_data is None:
+        log.error(f"Unable to start, invalid manifest for {hyperlink}")
+        sys.exit(1)
+
+    try:
+        hyperlink="\x1b]8;{};{}\x1b\\{}\x1b]8;;\x1b\\".format("", 
+            project_data["project"]["github"], manifest.display_name())
+    except KeyError:
+        log.warning("No GitHub page provided")
+    except Exception as error:
+        log.warning(f"Failed to read manifest\n {error}")
 
     #< parse start_mode >#
-    if project_name == "photon" and start_mode in ["run", "-r", "install", "-i", "uninstall", "update", "-u"]:
-        log.error(f"Invalid start_mode {start_mode} for photon, these are for projects")
+    project_only_modes=[
+        "run", "-r", 
+        "install", "-i", 
+        "uninstall", 
+        "update", "-u"
+    ]
+    if project_name == "photon" and start_mode in project_only_modes:
+        log.error(f"Invalid start_mode {start_mode} for photon")
         sys.exit(1)
 
+    highlight=_UNIVERSALS.colour_style("rich_orange")
     match start_mode:
         case "help" | "-h":
-            log.info(f"Displaying Help Info For: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Displaying Help Info For: {highlight}{hyperlink}")
             print_help(project_name)
 
         case "version" | "-v":
-            log.info(f"Displaying Version Info For: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Displaying Version Info For: {highlight}{hyperlink}")
             print_version(project_name)
 
         case "run" | "-r":
-            log.info(f"Running Project: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Running Project: {highlight}{hyperlink}")
             run_package(project_name)
 
         case "install" | "-i":
-            log.info(f"Installing Project: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Installing Project: {highlight}{hyperlink}")
             install_project(project_name)
 
         case "uninstall":
-            log.info(f"Uninstalling Project: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Uninstalling Project: {highlight}{hyperlink}")
             uninstall_project(project_name)
 
         case "update" | "-u":
-            log.info(f"Updating Project: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Updating Project: {highlight}{hyperlink}")
             update_project(project_name)
 
         case "list" | "-l":
-            log.info(f"Listing Project Info For: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Listing Project Info For: {highlight}{hyperlink}")
             list_project(project_name)
 
         case "refresh":
-            log.info(f"Refreshing Project: {_UNIVERSE.get_colour_style("rich_orange")}{hyperlink}")
+            log.info(f"Refreshing Project: {highlight}{hyperlink}")
             refresh_project(project_name)
+
+        #< development options >#
+        case "dev-init":
+            log.error("Not yet implemented")
+            sys.exit(1)
+
+        case "dev-manifest-check":
+            log.error("Not yet implemented")
+            sys.exit(1)
+
+        case "dev-source-manifest-check":
+            log.error("Not yet implemented")
+            sys.exit(1)
 
         case _:
             log.error("Invalid arguments provided")

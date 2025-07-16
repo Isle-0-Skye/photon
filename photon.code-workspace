@@ -17,5 +17,11 @@
 		"telemetry.feedback.enabled": false,
 		"telemetry.telemetryLevel": "off",
 		"workbench.startupEditor": "none",
+		"editor.rulers": [
+			72, 79, 99
+		],
+		"workbench.colorCustomizations": {
+			"editorRuler.foreground": "#333333"
+		}
 	}
 }

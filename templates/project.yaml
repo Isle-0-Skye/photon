@@ -1,0 +1,88 @@
+format_version: !!int 1
+
+#< general information about the project >#
+project:
+    type: !!str 
+    github: !!str 
+
+    name: !!str 
+    display_name: !!str 
+
+    description: !!str 
+    #< the text to print for project --help >#
+    help_text: !!str 
+
+    #< project version information >#
+    version:
+        full: !!str 
+        released: !!str 
+        name: !!str 
+
+        major: !!int 
+        minor: !!int 
+        revision: !!int 
+
+    #< languages or translations the project supports >#
+    languages: []
+
+#< information for the installation/uninstallation/update process >#
+setup:
+    requires: 
+        dependencies: {}
+        recommends: {}
+        suggests: {}
+
+#< information about the primary language the project is made in >#
+language:
+    name: !!str 
+
+    #< language version information >#
+    version:
+        full: !!str 
+
+        major: !!int 
+        minor: !!int 
+        revision: !!int 
+
+        known_supported: []
+
+#< information about each of the major platforms, the name matches platform.system() >#
+platform:
+    #< ------------ >#
+    Windows:
+        icon: !!str 
+        category: !!str 
+        keywords: []
+        runtime_args: []
+
+        #< platform version information >#
+        known_supported: !!bool true
+        version:
+            known_supported: []
+            known_unsupported: []
+
+    #< ------------ >#
+    Linux:
+        icon: !!str 
+        category: !!str 
+        keywords: []
+        runtime_args: []
+
+        #< platform version information >#
+        known_supported: !!bool true
+        version:
+            known_supported: []
+            known_unsupported: []
+
+    #< ------------ >#
+    Darwin:
+        icon: !!str 
+        category: !!str 
+        keywords: []
+        runtime_args: []
+
+        #< platform version information >#
+        known_supported: !!bool false
+        version:
+            known_supported: []
+            known_unsupported: []
