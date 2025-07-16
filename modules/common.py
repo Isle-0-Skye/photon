@@ -99,13 +99,13 @@ class universals():
     def installed_manifest_path(
             self,
             project_name:str
-        ) -> str|None:
+        ) -> str:
         """
-        returns the path to the installed project manifest if it exists\n
-        if no installed project manifest if found this returns 'None'
+        returns the path to the installed project manifest \n
+        the path is return regardless if it exists
         """
 
-        os.path.join(self._PHOTON_ROOT, 
+        return os.path.join(self._PHOTON_ROOT, 
             "manifests", "installed", f"{project_name}.yaml")
 
 
@@ -118,22 +118,22 @@ class universals():
         if no installed project manifest if found this returns 'False'
         """
 
-        if self.installed_manifest_path(project_name) is None:
-            return False
-        else:
+        if os.path.exists(self.installed_manifest_path(project_name)):
             return True
+        else:
+            return False
 
 
     def all_manifest_path(
             self,
             project_name:str
-        ) -> str|None:
+        ) -> str:
         """
-        returns the path to the cached project manifest if it exists\n
-        if no cached project manifest if found this returns 'None'
+        returns the path to the cached project manifest \n
+        the path is return regardless if it exists
         """
 
-        os.path.join(self._PHOTON_ROOT, 
+        return os.path.join(self._PHOTON_ROOT, 
             "manifests", "all", f"{project_name}.yaml")
 
 
@@ -146,10 +146,10 @@ class universals():
         if no cached project manifest if found this returns 'False'
         """
 
-        if self.all_manifest_path(project_name) is None:
-            return False
-        else:
+        if os.path.exists(self.all_manifest_path(project_name)):
             return True
+        else:
+            return False
 
 
     def colour_style(
@@ -231,26 +231,24 @@ class customFormatter(logging.Formatter):
     time_fmt=f"{_ld}[{asctime}]{_lr}"
     file_name_lineno_fmt=f"{_ld}[{file_name_lineno}]{_lr}"
 
-    trace_format=f"""
-    {time_fmt} {_ld}[{level_name}]{_lr} \
-        {file_name_lineno_fmt} {_ld}{message}{_lr}
-    """
+    trace_format=f"{time_fmt} {_ld}[{level_name}]{_lr}" \
+        f" {file_name_lineno_fmt} {_ld}{message}{_lr}"
 
     FORMATS = {
-        logging.DEBUG:    f"{time_fmt} {_ld}[{level_name}]{_lr} \
-            {file_name_lineno_fmt} {_ld}{message}{_lr}",
+        logging.DEBUG:    f"{time_fmt} {_ld}[{level_name}]{_lr}" \
+            f" {file_name_lineno_fmt} {_ld}{message}{_lr}",
 
-        logging.INFO:     f"{time_fmt} {_li}[{level_name}]{_lr} \
-            {file_name_lineno_fmt} {_li}{message}{_lr}",
+        logging.INFO:     f"{time_fmt} {_li}[{level_name}]{_lr}" \
+            f" {file_name_lineno_fmt} {_li}{message}{_lr}",
 
-        logging.WARNING:  f"{time_fmt} {_lw}[{level_name}]{_lr} \
-            {file_name_lineno_fmt} {_lw}{message}{_lr}",
+        logging.WARNING:  f"{time_fmt} {_lw}[{level_name}]{_lr}" \
+            f" {file_name_lineno_fmt} {_lw}{message}{_lr}",
 
-        logging.ERROR:    f"{time_fmt} {_le}[{level_name}]{_lr} \
-            {file_name_lineno_fmt} {_le}{message}{_lr}",
+        logging.ERROR:    f"{time_fmt} {_le}[{level_name}]{_lr}" \
+            f" {file_name_lineno_fmt} {_le}{message}{_lr}",
 
-        logging.CRITICAL: f"{time_fmt} {_lc}[{level_name}]{_lr} \
-            {file_name_lineno_fmt} {_lc}{message}{_lr}"
+        logging.CRITICAL: f"{time_fmt} {_lc}[{level_name}]{_lr}" \
+            f" {file_name_lineno_fmt} {_lc}{message}{_lr}"
     }
 
 
@@ -418,11 +416,14 @@ class projectManifest():
             self.installed_manifest=True
             self.project_installed_manifest_path=_UNIVERSALS.installed_manifest_path(self.project_name)
 
+        log.debug(f"manifest_all: {self.manifest_exists}")
+        log.debug(f"manifest_installed: {self.installed_manifest}")
+
         try:
             with open(self.project_manifest_path, "r") as project_file: # type: ignore
                 self.project_data:dict[str, Any]=yaml.safe_load(project_file)
         except Exception as error:
-            log.warning(f"Failed to read project file:\n{error}")
+            log.warning(f"Failed to read project file:\n {error}")
             log.warning("project_data set to None")
             self.project_data=None # type: ignore
 
