@@ -1,0 +1,67 @@
+format_version: !!int 1
+
+help_text: !!str |-
+    {d}command format for providing {h}photon{d} arguments is:
+    {h}python /path/to/photon start_mode project_name --optional_argument=value{d}
+
+    {d}command format for providing {h}project{d} arguments is:
+    {h}python /path/to/photon start_mode project_name -- --optional_argument=value{d}
+
+    most options start with {h}--{d} , some start with {h}-{d}
+    {h}--{d} on its own is a seperator, anything after it is passed to the project
+    {h}|{d} means or
+
+start_modes:
+  help:
+    short_hand: !!str "-h"
+    description: !!str "display this help information"
+
+  version:
+    short_hand: !!str "-v"
+    description: !!str "display version information for Photon"
+
+  run:
+    short_hand: !!str "-r"
+    description: !!str "run the selected project"
+
+  install:
+    short_hand: !!str "-i"
+    description: !!str "install the selected project"
+
+  uninstall:
+    description: !!str "uninstall the selected project"
+
+  update:
+    short_hand: !!str "-u"
+    description: !!str "update the selected project"
+
+  list:
+    short_hand: !!str "-l"
+    description: !!str "display a list of information about a project"
+
+  refresh:
+    description: !!str "refresh data about a project"
+
+  dev-init:
+    description: !!str "create a new photon package project in photon/packages/my_package/"
+
+  dev-project-manifest-check:
+    description: !!str "check the project manifest contents for missing or invalid data"
+
+  dev-argument-manifest-check:
+    description: !!str "check the argument manifest contents for missing or invalid data"
+
+  dev-source-manifest-check:
+    description: !!str "check the source manifest contents for missing or invalid data"
+
+optional_arguments: 
+  log-level:
+    description: !!str "sets the log level for printing to the terminal for both photon and the project"
+    valid_values: [
+      "DEBUG", 
+      "INFO", 
+      "WARNING", 
+      "ERROR", 
+      "CRITICAL"
+    ]
+    default_value: !!str "INFO"

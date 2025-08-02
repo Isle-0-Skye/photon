@@ -3,15 +3,15 @@ format_version: !!int 1
 # < general information about the project > #
 project:
   type: !!str "package"
-  name: !!str "my_package"
-  display_name: !!str "My Packgae"
-  summary: !!str "Some Package"
+  name: !!str "photon"
+  display_name: !!str "Photon"
+  summary: !!str "Library and wrapper middleman for small apps"
 
   # < project version information > #
   version:
     full: !!str "1.0.0"
-    released: !!str "2025-01-01"
-    name: !!str "My Release"
+    released: !!str "2025-07-30"
+    name: !!str "Numero Uno"
 
     major: !!int 1
     minor: !!int 0

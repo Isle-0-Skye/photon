@@ -1,3 +1,4 @@
+# standard
 reset: !!str "\x1b[0m"
 black: !!str "\x1b[30m"
 red: !!str "\x1b[31m"
@@ -15,11 +16,17 @@ bold_blue: !!str "\x1b[34;1m"
 bold_magenta: !!str "\x1b[35;1m"
 bold_cyan: !!str &bold_cyan "\x1b[36;1m"
 
-orange: !!str "\x1b[38;2;250;120;20m"
-rich_orange: !!str &rich_orange "\x1b[38;2;250;120;20;1m"
+# rgb
+default: !!str &default "\x1b[38;2;20;200;250m"
+orange: !!str &highlight "\x1b[38;2;250;120;20m"
+bold_orange: !!str &bold_orange "\x1b[38;2;250;120;20;1m"
+
+# quick access
+highlight: *highlight
+default: *default
 
 log_debug: *cyan
 log_info: *bold_cyan
 log_warning: *bold_yellow
-log_error: *rich_orange
+log_error: *bold_orange
 log_critical: *bold_red
