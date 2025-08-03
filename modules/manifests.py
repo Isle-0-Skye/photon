@@ -421,8 +421,7 @@ class argumentManifest(Manifest):
         if not with_dash:
             return data
 
-        for argument in data:
-            argument = f"--{argument}"
+        data = ["--" + argument for argument in data]
 
         return data
 
