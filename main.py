@@ -91,6 +91,14 @@ def main(argv: list[str] = []) -> None:
         sys.exit(1)
     start_mode = argv[1]
     project_name = argv[2]
+
+    if project_name.startswith("-"):
+        pLOG.error(
+            f"incorrect formatting, INPUT_2:{project_name} is an argument but should be a project name",
+        )
+        print_help("photon")
+        sys.exit(1)
+
     if project_name == "photon":
         project_is_photon = True
     else:
@@ -248,11 +256,11 @@ def main(argv: list[str] = []) -> None:
             sys.exit(1)
 
         if (for_photon) and (argument not in valid_photon_arguments):
-            pLOG.error(f"{arg} is not a valid option for photon")
+            pLOG.error(f"{argument} is not a valid option for photon")
             sys.exit(1)
 
         if (not for_photon) and (argument not in valid_project_arguments):
-            pLOG.error(f"{arg} is not a valid option for {project_name}")
+            pLOG.error(f"{argument} is not a valid option for {project_name}")
             sys.exit(1)
 
         # < removing prefix after checks means user has to use ------------ > #
