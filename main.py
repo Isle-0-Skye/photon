@@ -126,10 +126,7 @@ def main(argv: list[str] = []) -> None:
 
     installed_manifest_path = Path(UNIVERSALS.root(), "manifests", "installed", "photon.yaml")
     if not installed_manifest_path.exists():
-        Path.write_text(
-            installed_manifest_path,
-            Path.read_text(Path(UNIVERSALS.root(), "vault", "project.yaml")),
-        )
+        Path(UNIVERSALS.root(), "vault", "project.yaml").symlink_to(installed_manifest_path)
 
     sources_manifest_path = Path(UNIVERSALS.root(), "manifests", "sources", "photon.yaml")
     if not sources_manifest_path.exists():
