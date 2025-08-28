@@ -18,10 +18,10 @@ def print_import_error(
 
 
 # < pre installed imports --------------------------------------------------------------------- > #
-import os
-import sys
+import os  # noqa: E402
+import sys  # noqa: E402
 
-from pathlib import Path
+from pathlib import Path  # noqa: E402
 
 
 # < photon provided imports ------------------------------------------------------------------- > #

@@ -49,7 +49,7 @@ class universals:
 
         # < path of this files parent directory > #
         # self.PHOTON_ROOT = os.path.realpath(__file__).rsplit(os.sep, 2)[0]
-        self.PHOTON_ROOT = Path(__file__).parent.parent
+        self.PHOTON_ROOT = Path(__file__).resolve().parent.parent
 
         # < load style file > #
         photon_style_file = Path(self.PHOTON_ROOT, "style.yaml")
@@ -140,7 +140,7 @@ def logger(log_level: str | int = logging.DEBUG) -> logging.Logger:
     photons logger
     """
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger("photon_logger")
     logger.setLevel(logging.DEBUG)
 
     custom_handler = logging.StreamHandler(sys.stdout)
