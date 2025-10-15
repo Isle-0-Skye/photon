@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" version="1.1" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+<g transform="matrix(.2417 0 0 .2417 4.267 4.267)">
+<path transform="scale(16)" d="m8 2v60h48v-50l-10-10z" fill="#ccc"/>
+<path transform="scale(16)" d="m56 12h-10v-10l5 5z" fill="#b3b3b3" stroke-width="2.5"/>
+<g fill="#808080" font-family="'DejaVu Sans'" font-size="8.077px">
+<text transform="matrix(21.51 0 0 18.24 162.5 -883.2)" style="shape-inside:url(#rect8);white-space:pre" xml:space="preserve"><tspan x="3.9511719" y="95.626375"><tspan font-family="'DejaVu Sans Mono'">IMAGE</tspan></tspan></text>
+<text transform="matrix(21.51 0 0 18.24 185.1 -1063)" style="shape-inside:url(#rect8-0);white-space:pre" xml:space="preserve"><tspan x="3.9511719" y="95.626375">LOAD</tspan></text>
+<text transform="matrix(21.51 0 0 18.24 310.7 -1243)" style="shape-inside:url(#rect8-9);white-space:pre" xml:space="preserve"><tspan x="3.9511719" y="95.626375">TO</tspan></text>
+<text transform="matrix(21.51 0 0 18.24 108.7 -1425)" style="shape-inside:url(#rect8-0-5);white-space:pre" xml:space="preserve"><tspan x="3.9511719" y="95.626375"><tspan font-family="'DejaVu Sans Mono'">FAILED</tspan></tspan></text>
+</g>
+</g>
+</svg>
