@@ -1,0 +1,29 @@
+
+help_text = [
+    "{H3}photon version 1.0.1 under the LGPL license 2025",
+    "",
+    "{H1}photon{H2} [{H1}options{H2}] [{H1}arguments{H2}] [{H1}flags{H2}]",
+    "",
+    "example: {H1}photon --log-level DEBUG{H2}",
+    "",
+    "the format / layout of this help text is:",
+    "",
+    "[{H1}input type{H2}]",
+    "  {H1}full name {R}|{H1} short name {R}-{H1} does the input take an argument {R}-{H1} input description{H2}",
+    "            {R}[ {H1}valid argument 1 (default){R} | {H1}valid argument 2{R} ]{H2}",
+    "",
+    "the following inputs are valid:",
+    "",
+    "[{H1}options{H2}]",
+    "  {H1}help        {R}|{H1} N/A {R}-{H1} False {R}-{H2} print this help text",
+    "  {H1}version     {R}|{H1} N/A {R}-{H1} False {R}-{H2} print the version as json",
+    "",
+    "[{H1}flags{H2}]",
+    "  {H1}--log-level {R}|{H1} N/A {R}-{H1} True  {R}-{H2} set photons log level{R}",
+    "              [ {H1}DEBUG{R} | {H1}INFO (default){R} | {H1}WARNING{R} | {H1}ERROR{R} | {H1}CRITICAL{R} ]",
+]
+
+[version]
+major = 1
+minor = 0
+revision = 1

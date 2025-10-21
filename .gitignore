@@ -1,4 +1,6 @@
+# ignore these generic file types
 *.pyi
+*.pyc
 
-settings/
-third_party/
+# ignore these generic directories
+__pycache__/

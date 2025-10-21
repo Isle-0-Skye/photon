@@ -177,7 +177,7 @@ class Package:
 
         self._installed: bool = False
         self._manifest: bool = False
-        self._manifest_file: Path = Paths("photon").settings().joinpath(f"{self._name}.toml")
+        self._manifest_file: Path = self._paths.root().joinpath("manifest.toml")
 
         if importlib.util.find_spec(self._dir_name) is not None:
             self._installed = True
@@ -257,6 +257,8 @@ class Package:
 
         for arg in extra_args:
             run_args.append(arg)
+
+        PHOTON_LOGGER.debug(f"running {self._dir_name} with args: {run_args}")
 
         process = subprocess.run(run_args)
 
@@ -340,35 +342,57 @@ class Package:
 
     # < ------------------------------------------------------------------- > #
 
-    def update(self) -> int:
+    def update(self, archive_dir: Path | None = None, force: bool = False) -> int:
         # < update not install > #
-        if not self._installed:
+        if force:
+            PHOTON_LOGGER.debug("forcing update")
+        elif not self._installed:
             PHOTON_LOGGER.error("cannot update, not installed")
             return 1
 
-        src: Path | None = self.download()
-        file_src: str
+        if archive_dir is None:
+            archive_dir = self.download()
 
-        if src is None:
+        if archive_dir is None:
             return 1
 
+        # move from the archive directory
+        # move to the packge root directory
         mv_from: list[str] = []
         mv_to: list[str] = []
 
-        for entry in src.rglob("*"):
+        file_src: str
+
+        # < from archive for > #
+        for entry in archive_dir.rglob("*"):
             if entry.is_dir():
                 continue
 
-            file_src = entry.as_posix().split(src.as_posix())[1]
-            mv_from.append(file_src.removeprefix(os.sep).removeprefix("/"))
+            file_src = entry.as_posix().split(archive_dir.as_posix())[1]
+            file_src = file_src.removeprefix(os.sep).removeprefix("/")
 
+            mv_from.append(file_src)
+
+        if "update.py" not in mv_from:
+            mv_from.append("update.py")
+
+        # < to package root > #
         for entry in self._paths.root().rglob("*"):
             if entry.is_dir():
                 continue
 
             file_src = entry.as_posix().split(self._paths.root().as_posix())[1]
-            mv_to.append(file_src.removeprefix(os.sep).removeprefix("/"))
+            file_src = file_src.removeprefix(os.sep).removeprefix("/")
 
+            if file_src.startswith("pkg"):
+                continue
+
+            mv_to.append(file_src)
+
+        if "update.py" not in mv_to:
+            mv_to.append("update.py")
+
+        # < clean > #
         to_remove: set[str] = set(mv_to) - set(mv_from)
 
         PHOTON_LOGGER.info("removing orphaned files...")
@@ -378,11 +402,11 @@ class Package:
             PHOTON_LOGGER.debug(f"  - {path}")
             path.unlink()
 
-        return self.install(True, src)
+        return self.install(archive_dir, True)
 
     # < ------------------------------------------------------------------- > #
 
-    def install(self, force: bool = False, src: Path | None = None) -> int:
+    def install(self, archive_dir: Path | None = None, force: bool = False) -> int:
         # < install not update or overwrite > #
         if force:
             PHOTON_LOGGER.debug("forcing install")
@@ -390,31 +414,32 @@ class Package:
             PHOTON_LOGGER.error("already installed")
             return 1
 
-        if src is None:
-            src = self.download()
+        if archive_dir is None:
+            archive_dir = self.download()
 
-        if src is None:
+        if archive_dir is None:
             return 1
 
         # < find all package files and move them > #
         PHOTON_LOGGER.info("moving files...")
-        base_length = src.parts.__len__()
+        base_length = archive_dir.parts.__len__()
 
-        for entry in src.rglob("*"):
+        for entry in archive_dir.rglob("*"):
             if entry.is_dir():
                 continue
 
-            dst: Path = self._paths.root().joinpath(*entry.parts[base_length:])
-            file: str = entry.as_posix().split(src.as_posix())[1]
-            file_src: Path = src.joinpath(file.removeprefix(os.sep).removeprefix("/"))
+            file_dst: Path = self._paths.root().joinpath(*entry.parts[base_length:])
+
+            file: str = entry.as_posix().split(archive_dir.as_posix())[1]
+            file_src: Path = archive_dir.joinpath(file.removeprefix(os.sep).removeprefix("/"))
 
             PHOTON_LOGGER.debug("moving: ")
-            PHOTON_LOGGER.debug(f"  src: {file_src}")
-            PHOTON_LOGGER.debug(f"  dst: {dst}")
+            PHOTON_LOGGER.debug(f"  - src: {file_src}")
+            PHOTON_LOGGER.debug(f"  - dst: {file_dst}")
 
             # < mkdir if needed and move > #
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            file_src.replace(dst)
+            file_dst.parent.mkdir(parents=True, exist_ok=True)
+            file_src.replace(file_dst)
 
         # < install dependencies > #
         requirements_txt = self._paths.root().joinpath("requirements.txt")
@@ -437,12 +462,6 @@ class Package:
                 PHOTON_LOGGER.error("failed to install dependencies")
                 return process.returncode
 
-        # < add manifest to photon > #
-        if self._paths.manifest().exists():
-            Paths("photon").settings().joinpath(f"{self._name}.toml").symlink_to(
-                self._paths.manifest()
-            )
-
         # < cleanup > #
 
         # < empty dirs > #
@@ -459,7 +478,7 @@ class Package:
             return 0
 
         with open(photon_config, "r") as fp:
-            config: dict[str, dict[str, list[str]]] = json.load(fp)
+            config: dict[str, dict[str, list[str]]] = toml.load(fp)
 
         cleanup_conf = config.get("post-install-clean")
 
@@ -487,6 +506,84 @@ class Package:
                 shutil.rmtree(path)
 
         return 0
+
+    # < ------------------------------------------------------------------- > #
+
+
+# < ----------------------------------------------------------------------- > #
+
+
+class PhotonPackage(Package):
+    def __init__(self, raw_name: str) -> None:
+        super().__init__(raw_name)
+
+    # < ------------------------------------------------------------------- > #
+
+    def run(self, extra_args: list[str]) -> int:
+        PHOTON_LOGGER.warning("cannot run self")
+        return 1
+
+    # < ------------------------------------------------------------------- > #
+
+    def uninstall(self, extra_args: list[str] = []) -> int:
+        PHOTON_LOGGER.warning("cannot uninstall self")
+        return 1
+
+    # < ------------------------------------------------------------------- > #
+
+    def update(self, archive_dir: Path | None = None, force: bool = False) -> int:
+        # < update not install > #
+        if force:
+            PHOTON_LOGGER.debug("forcing update")
+        elif not self._installed:
+            PHOTON_LOGGER.error("cannot update, not installed")
+            return 1
+
+        if archive_dir is None:
+            archive_dir = self.download()
+
+        if archive_dir is None:
+            return 1
+
+        update_file_src = archive_dir.joinpath("lib", "package.py")
+        update_file_dst = self._paths.root().joinpath("update.py")
+
+        if_name_main = "\n".join(
+            [
+                "\nif __name__ == '__main__':",
+                "    package = Package('github:Isle-0-Skye.photon')",
+                f"    package.update(archive_dir=Path('{archive_dir}'), force=True)\n",
+            ]
+        )
+
+        if not update_file_src.exists():
+            return 1
+
+        update_file_dst.write_bytes(update_file_src.read_bytes())
+
+        with open(update_file_dst, "a") as fp:
+            fp.write(if_name_main)
+
+        if sys.platform == "linux":
+            command = ["bash", "-c", f"sleep 3 ; {sys.executable} {update_file_dst}"]
+            _process = subprocess.Popen(command, start_new_session=True)
+        else:
+            command = [
+                f"powershell.exe Start-Sleep -Seconds 3 ; {sys.executable} {update_file_dst}"
+            ]
+            _process = subprocess.Popen(
+                command,
+                start_new_session=True,
+                creationflags=subprocess.DETACHED_PROCESS,
+            )
+
+        return 0
+
+    # < ------------------------------------------------------------------- > #
+
+    def install(self, archive_dir: Path | None = None, force: bool = False) -> int:
+        PHOTON_LOGGER.warning("cannot install self")
+        return 1
 
     # < ------------------------------------------------------------------- > #
 
