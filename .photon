@@ -1,0 +1,17 @@
+extend-extensions = [
+    ".code-workspace",
+    ".pyc",
+]
+
+extend-files = [
+    ".gitignore",
+    ".photon",
+    "mypy.ini",
+    "py.typed",
+    "requirements.txt",
+    "ruff.toml",
+]
+
+extend-dirs = [
+    "pkg",
+]
