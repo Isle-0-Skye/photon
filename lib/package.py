@@ -478,7 +478,7 @@ class Package:
             return 0
 
         with open(photon_config, "r") as fp:
-            config: dict[str, dict[str, list[str]]] = json.load(fp)
+            config: dict[str, dict[str, list[str]]] = toml.load(fp)
 
         cleanup_conf = config.get("post-install-clean")
 
