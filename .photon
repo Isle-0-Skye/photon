@@ -1,3 +1,5 @@
+[post-install-clean]
+
 extend-extensions = [
     ".code-workspace",
     ".pyc",
